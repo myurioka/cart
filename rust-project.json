@@ -1,0 +1,10 @@
+{
+    "sysroot_src": "/home/myurioka/.rustup\toolchains/stable-x86_64-unknown-linux-gnu/bin",
+    "crates": [
+        {
+            "root_module": "src/wasm/src/lib.rs",
+            "edition": "2021",
+            "deps": []
+        }
+    ]
+}

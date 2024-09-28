@@ -1,0 +1,19 @@
+{
+  "name": "cart",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "wasm-pack build ./src/wasm --target web && vite build",
+    "build-wasm": "wasm-pack build ./src/wasm --target web",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^5.4.0",
+    "wasm-pack": "^0.13.0"
+  }
+}

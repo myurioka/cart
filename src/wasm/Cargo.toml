@@ -1,0 +1,46 @@
+[package]
+name = "wasm"
+description = "ascii game"
+version = "0.1.0"
+categories = ["wasm"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = { version = "0.2.84", features = ["serde-serialize"]}
+console_error_panic_hook = "0.1.7"
+rand = "0.8.4"
+getrandom = { version = "0.2.3", features = ["js"] }
+futures = "0.3.30"
+wasm-bindgen-futures = "0.4.43"
+serde = {version = "1.0.201", features = ["derive"] }
+anyhow = "1.0.83"
+async-trait = "0.1.80"
+js-sys = "0.3.70"
+
+[dependencies.web-sys]
+version = "0.3.69"
+features = ["console",
+            "Window",
+            "Document",
+            "HtmlCanvasElement",
+            "HtmlInputElement",
+            "CanvasRenderingContext2d",
+            "InputEvent",
+            "HtmlImageElement",
+            "Response",
+            "Performance",
+            "KeyboardEvent",
+            "AudioContext",
+            "AudioBuffer",
+            "AudioBufferSourceNode",
+            "AudioDestinationNode",
+            "AudioBufferOptions",
+            ]
+
+# These crates are used for running unit tests.
+#
+[dev-dependencies]
+wasm-bindgen-test = "0.3.28"
