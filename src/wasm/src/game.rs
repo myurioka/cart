@@ -41,8 +41,8 @@ const MESSAGE_RUNNING: &str = "Start!!";
 const MESSAGE_GAMEOVER: &str = "Game OVER!!";
 const MESSAGE_GAMECLEAR: &str = "Congrantuation!!";
 const MESSAGE_DISTANCE: f64 = 30.0;
-const BRAKESOUND_FILE: &str = "/assets/beep-7.wav";
-const BACKGROUND_MUSIC_FILE: &str = "/assets/background_song.mp3";
+const BRAKESOUND_FILE: &str = "assets/beep-7.wav";
+const BACKGROUND_MUSIC_FILE: &str = "assets/background_song.mp3";
 /* CONSTANT VALUE --> */
 
 pub struct GameStage {
