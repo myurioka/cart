@@ -13,34 +13,34 @@ use crate::{
     engine::{Audio, Sound, Line, Point, Game, KeyState, Renderer}
 };
 /* <-- CONSTANT VALUE */
-const STAGE_LEFT: f64 = 100.0;
-const STAGE_GOAL:f64 = 2300.0;
-const CART_START_X:f64 = 220.0;
-const CART_START_Y:f64 = 70.0;
-const VELOCITY_X:f64 = 0.8;
-const VELOCITY_STEP:f64 = 0.2;
-const VELOCITY_BRAKE_STEP:f64 = 0.1;
-const VELOCITY_LIMIT: f64 = 5.0;
-const VELOCITY_ZERO: f64 = 0.0;
-const ORNAMENT_X: f64 = STAGE_LEFT + 20.0;
-const ORNAMENT_Y: f64 = 50.0;
-const ORNAMENT_WIDTH: f64 = 10.0;
-const ORNAMENT_HEIGHT: f64 = 10.0;
-const MESSAGE_HIGHSCORE_X: f64 = 40.0;
-const MESSAGE_HIGHSCORE_Y: f64 = 570.0;
-const MESSAGE_TIME_X: f64 = 40.0;
-const MESSAGE_TIME_Y: f64 = 540.0;
-const MESSAGE_VELOCITY_X: f64 = 40.0;
-const MESSAGE_VELOCITY_Y: f64 = 510.0;
-const MESSAGE_TIME: f64 =100.0;
-const MESSAGE_X: f64 = 230.0;
-const MESSAGE_Y: f64 = 350.0;
-const MESSAGE_OPENING_Y: f64 = 130.0;
+const STAGE_LEFT: f32 = 100.0;
+const STAGE_GOAL:f32 = 2300.0;
+const CART_START_X:f32 = 220.0;
+const CART_START_Y:f32 = 70.0;
+const VELOCITY_X:f32 = 0.8;
+const VELOCITY_STEP:f32 = 0.2;
+const VELOCITY_BRAKE_STEP:f32 = 0.1;
+const VELOCITY_LIMIT: f32 = 5.0;
+const VELOCITY_ZERO: f32 = 0.0;
+const ORNAMENT_X: f32 = STAGE_LEFT + 20.0;
+const ORNAMENT_Y: f32 = 50.0;
+const ORNAMENT_WIDTH: f32 = 10.0;
+const ORNAMENT_HEIGHT: f32 = 10.0;
+const MESSAGE_HIGHSCORE_X: f32 = 40.0;
+const MESSAGE_HIGHSCORE_Y: f32 = 570.0;
+const MESSAGE_TIME_X: f32 = 40.0;
+const MESSAGE_TIME_Y: f32 = 540.0;
+const MESSAGE_VELOCITY_X: f32 = 40.0;
+const MESSAGE_VELOCITY_Y: f32 = 510.0;
+const MESSAGE_TIME: f32 =100.0;
+const MESSAGE_X: f32 = 230.0;
+const MESSAGE_Y: f32 = 350.0;
+const MESSAGE_OPENING_Y: f32 = 130.0;
 const MESSAGE_OPENING: &str = "Push Space Key.";
 const MESSAGE_RUNNING: &str = "Start!!";
 const MESSAGE_GAMEOVER: &str = "Game OVER!!";
 const MESSAGE_GAMECLEAR: &str = "Congrantuation!!";
-const MESSAGE_DISTANCE: f64 = 30.0;
+const MESSAGE_DISTANCE: f32 = 30.0;
 const BRAKESOUND_FILE: &str = "/cart/assets/beep-7.wav";
 const BACKGROUND_MUSIC_FILE: &str = "/cart/assets/background_song.mp3";
 /* CONSTANT VALUE --> */
@@ -146,7 +146,7 @@ impl GameStageState<Playing> {
 
         // Cart reach goal
         if self.material.distance > STAGE_GOAL {
-            let mut _highscore:f64 = self.material.frame;
+            let mut _highscore:f32 = self.material.frame;
             if self.material.highscore != 0.0 {
                 _highscore = _highscore.min(self.material.highscore);
             }
@@ -413,15 +413,15 @@ pub trait Piece {
 
 pub struct Material {
     music: Music,
-    frame: f64,
-    distance: f64,
-    highscore: f64,
+    frame: f32,
+    distance: f32,
+    highscore: f32,
     cart: Cart,
     ornaments: Vec<Ornament>,
     walls: Vec<Wall>,
 }
 impl Material {
-    fn new(highscore: f64, audio: Audio, sound: Sound) -> Self {
+    fn new(highscore: f32, audio: Audio, sound: Sound) -> Self {
         let mut _walls = vec![];
         for w in WALLS_DATA {
                 _walls.push(Wall::new(Point{x:w.0, y:w.1}, Point{x: w.2, y: w.3},Point{x: 0.0, y: 0.0}));

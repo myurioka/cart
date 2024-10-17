@@ -32,7 +32,7 @@ pub mod wall {
     }
 
     /* <-- CONSTANT VALUE */
-    pub const WALLS_DATA : [(f64, f64, f64, f64); 26] = 
+    pub const WALLS_DATA : [(f32, f32, f32, f32); 26] = 
         [
             (     30.0,   0.0,    30.0,  600.0),
             (     30.0,  600.0,   140.0, 1000.0),

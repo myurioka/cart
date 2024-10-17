@@ -1,5 +1,6 @@
 use crate::browser::{self, LoopClosure};
 use crate::sound;
+//use num_traits::FromPrimitive;
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use futures::channel::{
@@ -11,7 +12,7 @@ use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{AudioContext, AudioBuffer};
 use web_sys::CanvasRenderingContext2d;
 
-pub const HEIGHT: f64 = 600.0;
+pub const HEIGHT: f32 = 600.0;
 pub const FONT_COLOR: &str = "green";
 pub const FONT_M: &str = "18px monospace";
 pub const FONT_S: &str = "14px monospace";
@@ -20,11 +21,11 @@ pub const FONT_LEFT: &str = "left";
 
 #[derive(Clone, Copy, Default)]
 pub struct Point {
-    pub x: f64,
-    pub y: f64,
+    pub x: f32,
+    pub y: f32,
 }
 impl Point{
-    pub fn new(x: f64, y: f64) -> Point {
+    pub fn new(x: f32, y: f32) -> Point {
         Point { x: x, y: y }
     }
     pub fn add(&self, target: Point) -> Point {
@@ -48,43 +49,43 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub fn clear(&self, point: &Point, width: f64, height: f64) {
+    pub fn clear(&self, point: &Point, width: f32, height: f32) {
         self.context.clear_rect(
             point.x.into(),
             point.y.into(),
-            width,
-            height,
+            width as f64,
+            height as f64,
         );
     }
     pub fn text(&self, point: &Point, txt: &str) {
         self.context.set_fill_style(&JsValue::from(FONT_COLOR));
         self.context.set_text_align(FONT_CENTER);
         self.context.set_font(FONT_M);
-        let _ = self.context.fill_text(txt, point.x, HEIGHT - point.y);
+        let _ = self.context.fill_text(txt, point.x as f64, HEIGHT as f64 - point.y as f64);
     }
     pub fn text_s(&self, point: &Point, txt: &str) {
         self.context.set_fill_style(&JsValue::from(FONT_COLOR));
         self.context.set_text_align(FONT_CENTER);
         self.context.set_font(FONT_S);
-        let _ = self.context.fill_text(txt, point.x, HEIGHT - point.y);
+        let _ = self.context.fill_text(txt, point.x as f64, HEIGHT as f64 - point.y as f64);
     }
     pub fn text_left(&self, point: &Point, txt: &str) {
         self.context.set_fill_style(&JsValue::from(FONT_COLOR));
         self.context.set_text_align(FONT_LEFT);
         self.context.set_font(FONT_S);
-        let _ = self.context.fill_text(txt, point.x, HEIGHT - point.y);
+        let _ = self.context.fill_text(txt, point.x as f64, HEIGHT as f64 - point.y as f64);
     }
     pub fn line(&self, p: &Point, q: &Point) {
         self.context.begin_path();
         self.context.set_stroke_style(&JsValue::from(FONT_COLOR));
-        self.context.move_to(p.x.into(), HEIGHT - p.y);
-        self.context.line_to(q.x.into(), HEIGHT - q.y);
+        self.context.move_to(p.x.into(), HEIGHT as f64 - p.y as f64);
+        self.context.line_to(q.x.into(), HEIGHT as f64 - q.y as f64);
         self.context.close_path();
         self.context.stroke();
     }
-    pub fn rect(&self, p: &Point, width: f64, height: f64) {
+    pub fn rect(&self, p: &Point, width: f32, height: f32) {
         self.context.set_stroke_style(&JsValue::from(FONT_COLOR));
-        self.context.rect(p.x,HEIGHT - p.y, width, height);
+        self.context.rect(p.x as f64,HEIGHT as f64 - p.y as f64, width as f64, height as f64);
         self.context.stroke();
     }
 }

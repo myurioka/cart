@@ -4,9 +4,9 @@ pub mod cart {
 /* <-- CONSTANT VALUE */
     const CART: [&str; 2]  = ["O❚O", "O❚O"];
     const CART_KNOCKED: [&str; 2] = ["O❚ O", "O❚",];
-    const CART_DISTANCE:f64 = 18.0;
-    pub const CART_WIDTH: f64 = 20.0;
-    pub const CART_HEIGHT: f64 = 14.0;
+    const CART_DISTANCE:f32 = 18.0;
+    pub const CART_WIDTH: f32 = 20.0;
+    pub const CART_HEIGHT: f32 = 14.0;
 /* CONSTANT VALUE --> */
 
     pub struct Cart {
@@ -88,7 +88,7 @@ pub mod cart {
             self.state_machine.context().velocity
         }
         pub fn draw(&self, renderer: &Renderer) {
-            let mut _distance:f64 = 0.0;
+            let mut _distance:f32 = 0.0;
             match &self.state_machine {
                 CartStateMachine::Knocked(_state) => {
                     for i in 0..CART_KNOCKED.len(){

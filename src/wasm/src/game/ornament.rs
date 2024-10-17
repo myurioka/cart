@@ -3,12 +3,12 @@ pub mod ornament {
 //
 
 /* <-- CONSTANT VALUE */
-    const GOAL_X: f64 = 110.0;
-    const GOAL_Y: f64 = 4500.0;
+    const GOAL_X: f32 = 110.0;
+    const GOAL_Y: f32 = 4500.0;
     const GOAL: [&str; 2] = ["□□■□□■□□■□□■□□■□□■□□■□","■□□■□□■□□■□□■□□■□□■□□■"];
-    const GOAL_DISTANCE: f64 = 20.0;
+    const GOAL_DISTANCE: f32 = 20.0;
     const TREE: [&str; 4]  = [" $ ", " $$ ", "$$$"," ▯ "];
-    const TREE_DISTANCE: f64 = 12.0;
+    const TREE_DISTANCE: f32 = 12.0;
 
     pub struct Ornament {
         pub state_machine: StateMachine,
@@ -27,7 +27,7 @@ pub mod ornament {
         }
         fn draw(&self, renderer: &Renderer) {
             // GOAL
-            let mut _distance:f64 = 0.0;
+            let mut _distance:f32 = 0.0;
             for i in 0..GOAL.len() {
                 renderer.text(
                     &Point{
