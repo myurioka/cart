@@ -97,7 +97,7 @@ pub trait Game {
     fn draw(&self, renderer: &Renderer);
 }
 
-const FRAME_SIZE: f64 = 1.0 / 30.0 * 1000.0;
+const FRAME_SIZE: f64 = 1.0 / 60.0 * 1000.0;
 pub struct GameLoop {
     last_frame: f64,
     accumulated_delta: f64,
