@@ -18,8 +18,8 @@ const STAGE_GOAL:f32 = 2300.0;
 const CART_START_X:f32 = 220.0;
 const CART_START_Y:f32 = 70.0;
 const VELOCITY_X:f32 = 0.8;
-const VELOCITY_STEP:f32 = 0.0001;
-const VELOCITY_BRAKE_STEP:f32 = 0.0005;
+const VELOCITY_STEP:f32 = 0.03;
+const VELOCITY_BRAKE_STEP:f32 = 0.06;
 const VELOCITY_LIMIT: f32 = 5.0;
 const VELOCITY_ZERO: f32 = 0.0;
 const ORNAMENT_X: f32 = STAGE_LEFT + 20.0;
@@ -159,6 +159,7 @@ impl GameStageState<Playing> {
             );
         }
         if _keystate.is_pressed("ArrowUp") && _velocity.y < VELOCITY_LIMIT {
+            log!("PASS");
             _velocity.y += VELOCITY_STEP;
         }
         if _keystate.is_pressed("ArrowDown") {
