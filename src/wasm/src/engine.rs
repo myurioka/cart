@@ -8,9 +8,9 @@ use futures::channel::{
     //oneshot::channel,
 };
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
-use wasm_bindgen::{JsCast, JsValue};
-use web_sys::{AudioContext, AudioBuffer};
+use wasm_bindgen::JsCast;
 use web_sys::CanvasRenderingContext2d;
+use web_sys::{AudioBuffer, AudioContext};
 
 pub const HEIGHT: f32 = 600.0;
 pub const FONT_COLOR: &str = "green";
@@ -24,12 +24,15 @@ pub struct Point {
     pub x: f32,
     pub y: f32,
 }
-impl Point{
+impl Point {
     pub fn new(x: f32, y: f32) -> Point {
         Point { x: x, y: y }
     }
     pub fn add(&self, target: Point) -> Point {
-        return Point{ x:&self.x + target.x, y:&self.y + target.y};
+        return Point {
+            x: &self.x + target.x,
+            y: &self.y + target.y,
+        };
     }
 }
 
@@ -50,42 +53,39 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn clear(&self, point: &Point, width: f32, height: f32) {
-        self.context.clear_rect(
-            point.x.into(),
-            point.y.into(),
-            width as f64,
-            height as f64,
-        );
+        self.context
+            .clear_rect(point.x.into(), point.y.into(), width as f64, height as f64);
     }
     pub fn text(&self, point: &Point, txt: &str) {
-        self.context.set_fill_style(&JsValue::from(FONT_COLOR));
+        self.context.set_fill_style_str(FONT_COLOR);
         self.context.set_text_align(FONT_CENTER);
         self.context.set_font(FONT_M);
-        let _ = self.context.fill_text(txt, point.x as f64, HEIGHT as f64 - point.y as f64);
+        let _ = self
+            .context
+            .fill_text(txt, point.x as f64, HEIGHT as f64 - point.y as f64);
     }
     pub fn text_s(&self, point: &Point, txt: &str) {
-        self.context.set_fill_style(&JsValue::from(FONT_COLOR));
+        self.context.set_fill_style_str(FONT_COLOR);
         self.context.set_text_align(FONT_CENTER);
         self.context.set_font(FONT_S);
-        let _ = self.context.fill_text(txt, point.x as f64, HEIGHT as f64 - point.y as f64);
+        let _ = self
+            .context
+            .fill_text(txt, point.x as f64, HEIGHT as f64 - point.y as f64);
     }
     pub fn text_left(&self, point: &Point, txt: &str) {
-        self.context.set_fill_style(&JsValue::from(FONT_COLOR));
+        self.context.set_fill_style_str(FONT_COLOR);
         self.context.set_text_align(FONT_LEFT);
         self.context.set_font(FONT_S);
-        let _ = self.context.fill_text(txt, point.x as f64, HEIGHT as f64 - point.y as f64);
+        let _ = self
+            .context
+            .fill_text(txt, point.x as f64, HEIGHT as f64 - point.y as f64);
     }
     pub fn line(&self, p: &Point, q: &Point) {
         self.context.begin_path();
-        self.context.set_stroke_style(&JsValue::from(FONT_COLOR));
+        self.context.set_stroke_style_str(FONT_COLOR);
         self.context.move_to(p.x.into(), HEIGHT as f64 - p.y as f64);
         self.context.line_to(q.x.into(), HEIGHT as f64 - q.y as f64);
         self.context.close_path();
-        self.context.stroke();
-    }
-    pub fn rect(&self, p: &Point, width: f32, height: f32) {
-        self.context.set_stroke_style(&JsValue::from(FONT_COLOR));
-        self.context.rect(p.x as f64,HEIGHT as f64 - p.y as f64, width as f64, height as f64);
         self.context.stroke();
     }
 }
@@ -132,7 +132,7 @@ impl GameLoop {
             game_loop.last_frame = perf;
             game.draw(&renderer);
 
-            let _= browser::request_animation_frame(f.borrow().as_ref().unwrap());
+            let _ = browser::request_animation_frame(f.borrow().as_ref().unwrap());
         }));
 
         browser::request_animation_frame(

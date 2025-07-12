@@ -1,25 +1,25 @@
 mod cart;
+mod music;
 mod ornament;
 mod wall;
-mod music;
-use anyhow::{anyhow, Result};
+use crate::{
+    engine::{Audio, Game, KeyState, Line, Point, Renderer, Sound},
+    game::wall::wall::WALLS_DATA,
+};
+use anyhow::Result;
 use async_trait::async_trait;
 use cart::cart::*;
+use music::music::*;
 use ornament::ornament::*;
 use wall::wall::*;
-use music::music::*;
-use crate::{
-    game::wall::wall::WALLS_DATA,
-    engine::{Audio, Sound, Line, Point, Game, KeyState, Renderer}
-};
 /* <-- CONSTANT VALUE */
 const STAGE_LEFT: f32 = 100.0;
-const STAGE_GOAL:f32 = 2300.0;
-const CART_START_X:f32 = 220.0;
-const CART_START_Y:f32 = 70.0;
-const VELOCITY_X:f32 = 0.8;
-const VELOCITY_STEP:f32 = 0.03;
-const VELOCITY_BRAKE_STEP:f32 = 0.06;
+const STAGE_GOAL: f32 = 2300.0;
+const CART_START_X: f32 = 220.0;
+const CART_START_Y: f32 = 70.0;
+const VELOCITY_X: f32 = 0.8;
+const VELOCITY_STEP: f32 = 0.03;
+const VELOCITY_BRAKE_STEP: f32 = 0.06;
 const VELOCITY_LIMIT: f32 = 5.0;
 const VELOCITY_ZERO: f32 = 0.0;
 const ORNAMENT_X: f32 = STAGE_LEFT + 20.0;
@@ -32,7 +32,7 @@ const MESSAGE_TIME_X: f32 = 40.0;
 const MESSAGE_TIME_Y: f32 = 540.0;
 const MESSAGE_VELOCITY_X: f32 = 40.0;
 const MESSAGE_VELOCITY_Y: f32 = 510.0;
-const MESSAGE_TIME: f32 =100.0;
+const MESSAGE_TIME: f32 = 100.0;
 const MESSAGE_X: f32 = 230.0;
 const MESSAGE_Y: f32 = 350.0;
 const MESSAGE_OPENING_Y: f32 = 130.0;
@@ -109,10 +109,16 @@ struct GameStageState<T> {
 struct Ready;
 impl GameStageState<Ready> {
     fn new(material: Material) -> GameStageState<Ready> {
-        GameStageState { _state: Ready, material,}
+        GameStageState {
+            _state: Ready,
+            material,
+        }
     }
     fn start_running(self) -> GameStageState<Playing> {
-        GameStageState { _state: Playing, material: self.material,}
+        GameStageState {
+            _state: Playing,
+            material: self.material,
+        }
     }
     fn update(self, _keystate: &KeyState) -> ReadyEndState {
         if _keystate.is_pressed("Space") {
@@ -137,26 +143,23 @@ impl From<ReadyEndState> for GameStageStateMachine {
 struct Playing;
 impl GameStageState<Playing> {
     fn update(mut self, _keystate: &KeyState) -> RunningEndState {
-
-        let mut _velocity:Point = self.material.cart.get_velocity();
-        let mut _position:Point = self.material.cart.get_position();
+        let mut _velocity: Point = self.material.cart.get_velocity();
+        let mut _position: Point = self.material.cart.get_position();
 
         self.material.frame += 1.0;
         self.material.distance += _velocity.y;
 
         // Cart reach goal
         if self.material.distance > STAGE_GOAL {
-            let mut _highscore:f32 = self.material.frame;
+            let mut _highscore: f32 = self.material.frame;
             if self.material.highscore != 0.0 {
                 _highscore = _highscore.min(self.material.highscore);
             }
             self.material.highscore = _highscore;
-            return RunningEndState::GameClear(
-                GameStageState {
-                    _state: GameClear,
-                    material: self.material,
-                }
-            );
+            return RunningEndState::GameClear(GameStageState {
+                _state: GameClear,
+                material: self.material,
+            });
         }
         if _keystate.is_pressed("ArrowUp") && _velocity.y < VELOCITY_LIMIT {
             log!("PASS");
@@ -184,10 +187,16 @@ impl GameStageState<Playing> {
 
         // Ornament
         self.material.ornaments.iter_mut().for_each(|ornament| {
-            ornament.run(Point{x: 0.0, y: -_velocity.y});
+            ornament.run(Point {
+                x: 0.0,
+                y: -_velocity.y,
+            });
         });
         self.material.walls.iter_mut().for_each(|wall| {
-            wall.run(Point{x: 0.0, y: -_velocity.y});
+            wall.run(Point {
+                x: 0.0,
+                y: -_velocity.y,
+            });
         });
 
         // check Cart collision
@@ -200,15 +209,13 @@ impl GameStageState<Playing> {
             }
             if self.material.cart.intersect(_line) {
                 self.material.cart.knocked();
-                return RunningEndState::GameOver(
-                    GameStageState {
-                        _state: GameOver,
-                        material: self.material,
-                    }
-                );
+                return RunningEndState::GameOver(GameStageState {
+                    _state: GameOver,
+                    material: self.material,
+                });
             };
         }
-      
+
         self.material.cart.update();
         self.material.ornaments.iter_mut().for_each(|ornament| {
             ornament.update();
@@ -242,7 +249,7 @@ impl GameStageState<GameOver> {
     fn new_game(self) -> GameStageState<Ready> {
         GameStageState {
             _state: Ready,
-            material: Material::reset(self.material)
+            material: Material::reset(self.material),
         }
     }
 }
@@ -276,7 +283,7 @@ impl GameStageState<GameClear> {
     fn new_game(self) -> GameStageState<Ready> {
         GameStageState {
             _state: Ready,
-            material: Material::reset(self.material)
+            material: Material::reset(self.material),
         }
     }
 }
@@ -292,7 +299,6 @@ impl From<GameClearEndState> for GameStageStateMachine {
         }
     }
 }
-
 
 #[derive(Copy, Clone)]
 pub struct Context {
@@ -319,7 +325,7 @@ impl<S> State<S> {
     pub fn context(&self) -> &Context {
         &self.context
     }
-    fn update_context(&mut self){
+    fn update_context(&mut self) {
         self.context = self.context.update();
     }
 }
@@ -329,7 +335,7 @@ pub enum Event {
 }
 
 #[derive(Copy, Clone)]
-pub enum StateMachine{
+pub enum StateMachine {
     Running(State<Running>),
 }
 #[derive(Copy, Clone)]
@@ -337,7 +343,7 @@ pub struct Running;
 impl State<Running> {
     pub fn new(p: Point, q: Point, velocity: Point) -> Self {
         State {
-            context: Context{
+            context: Context {
                 p: p,
                 q: q,
                 velocity: velocity,
@@ -346,16 +352,16 @@ impl State<Running> {
         }
     }
 
-    pub fn update(mut self)  -> State<Running> {
-            self.context.p = self.context.p.add( self.context.velocity);
-            self.context.q = self.context.q.add( self.context.velocity);
-            self.update_context();
-            self
-        }
-    pub fn run(self, velocity:Point) -> State<Running> {
+    pub fn update(mut self) -> State<Running> {
+        self.context.p = self.context.p.add(self.context.velocity);
+        self.context.q = self.context.q.add(self.context.velocity);
+        self.update_context();
+        self
+    }
+    pub fn run(self, velocity: Point) -> State<Running> {
         State {
             context: self.context.run(velocity),
-            _state: Running{},
+            _state: Running {},
         }
     }
 }
@@ -376,7 +382,7 @@ impl StateMachine {
         self.transition(Event::Update)
     }
 }
-impl From<State<Running>> for StateMachine{
+impl From<State<Running>> for StateMachine {
     fn from(state: State<Running>) -> Self {
         StateMachine::Running(state)
     }
@@ -385,22 +391,26 @@ impl From<State<Running>> for StateMachine{
 pub trait Piece {
     fn new(p: Point, q: Point, velocity: Point) -> Self;
     fn get_state_machine(&self) -> StateMachine;
-    fn set_state_machine(&mut self, state_machine:StateMachine);
-    fn update(&mut self){
+    fn set_state_machine(&mut self, state_machine: StateMachine);
+    fn update(&mut self) {
         let _state_machine = self.get_state_machine();
         self.set_state_machine(_state_machine);
     }
-    fn run(&mut self, velocity:Point){
+    fn run(&mut self, velocity: Point) {
         let _from_state_machine = self.get_state_machine();
         let _to_state_machine = _from_state_machine.transition(Event::Run(velocity));
         self.set_state_machine(_to_state_machine);
     }
     fn get_line(&self) -> Line {
         Line::new(
-            Point::new(self.get_state_machine().context().p.x,
-                       self.get_state_machine().context().p.y),
-            Point::new(self.get_state_machine().context().q.x,
-                        self.get_state_machine().context().q.y)
+            Point::new(
+                self.get_state_machine().context().p.x,
+                self.get_state_machine().context().p.y,
+            ),
+            Point::new(
+                self.get_state_machine().context().q.x,
+                self.get_state_machine().context().q.y,
+            ),
         )
     }
     fn draw(&self, renderer: &Renderer);
@@ -425,25 +435,34 @@ impl Material {
     fn new(highscore: f32, audio: Audio, sound: Sound) -> Self {
         let mut _walls = vec![];
         for w in WALLS_DATA {
-                _walls.push(Wall::new(Point{x:w.0, y:w.1}, Point{x: w.2, y: w.3},Point{x: 0.0, y: 0.0}));
-        };
+            _walls.push(Wall::new(
+                Point { x: w.0, y: w.1 },
+                Point { x: w.2, y: w.3 },
+                Point { x: 0.0, y: 0.0 },
+            ));
+        }
         Material {
-            music: Music::new(
-                audio,
-                sound,
-            ),
+            music: Music::new(audio, sound),
             frame: 0.0,
             distance: 0.0,
             highscore: highscore,
             cart: Cart::new(
-                Point { x: CART_START_X, y: CART_START_Y },
-                Point { x: 0.0, y: 0.0},
+                Point {
+                    x: CART_START_X,
+                    y: CART_START_Y,
+                },
+                Point { x: 0.0, y: 0.0 },
             ),
-            ornaments: vec![
-                Ornament::new(
-                    Point { x: ORNAMENT_X, y: ORNAMENT_Y },
-                    Point { x: ORNAMENT_X + ORNAMENT_WIDTH, y: ORNAMENT_Y + ORNAMENT_HEIGHT},
-                    Point { x: 0.0, y: 0.0 },
+            ornaments: vec![Ornament::new(
+                Point {
+                    x: ORNAMENT_X,
+                    y: ORNAMENT_Y,
+                },
+                Point {
+                    x: ORNAMENT_X + ORNAMENT_WIDTH,
+                    y: ORNAMENT_Y + ORNAMENT_HEIGHT,
+                },
+                Point { x: 0.0, y: 0.0 },
             )],
             walls: _walls,
         }
@@ -479,25 +498,34 @@ impl Game for GameStage {
 
                 let mut _walls = vec![];
                 for w in WALLS_DATA {
-                    _walls.push(Wall::new(Point{x:w.0, y:w.1}, Point{x: w.2, y: w.3},Point{x: 0.0, y: 0.0}));
+                    _walls.push(Wall::new(
+                        Point { x: w.0, y: w.1 },
+                        Point { x: w.2, y: w.3 },
+                        Point { x: 0.0, y: 0.0 },
+                    ));
                 }
                 let machine = GameStageStateMachine::new(Material {
                     frame: 0.0,
                     distance: 0.0,
                     highscore: 0.0,
-                    music: Music::new(
-                        audio,
-                        sound,
-                    ),
+                    music: Music::new(audio, sound),
                     cart: Cart::new(
-                        Point { x: CART_START_X, y: CART_START_Y },
-                        Point { x: 0.0, y: 0.0},
+                        Point {
+                            x: CART_START_X,
+                            y: CART_START_Y,
+                        },
+                        Point { x: 0.0, y: 0.0 },
                     ),
-                    ornaments: vec![
-                        Ornament::new(
-                            Point { x: ORNAMENT_X, y: ORNAMENT_Y },
-                            Point { x: ORNAMENT_X + ORNAMENT_WIDTH, y: ORNAMENT_Y + ORNAMENT_HEIGHT},
-                            Point { x: 0.0, y: 0.0 },
+                    ornaments: vec![Ornament::new(
+                        Point {
+                            x: ORNAMENT_X,
+                            y: ORNAMENT_Y,
+                        },
+                        Point {
+                            x: ORNAMENT_X + ORNAMENT_WIDTH,
+                            y: ORNAMENT_Y + ORNAMENT_HEIGHT,
+                        },
+                        Point { x: 0.0, y: 0.0 },
                     )],
                     walls: _walls,
                 });
@@ -505,8 +533,6 @@ impl Game for GameStage {
                     machine: Some(machine),
                 }))
             }
-            Some(_) => Err(anyhow!("Error: Game is already initialized!")),
-            
         }
     }
 
@@ -519,11 +545,7 @@ impl Game for GameStage {
     }
     // Whole World Drawing
     fn draw(&self, renderer: &Renderer) {
-        renderer.clear(
-            &Point{ x:0.0, y:0.0 },
-            600.0,
-            600.0,
-        );
+        renderer.clear(&Point { x: 0.0, y: 0.0 }, 600.0, 600.0);
         match &self.machine {
             Some(GameStageStateMachine::Ready(_state)) => {
                 if _state.material.frame < MESSAGE_TIME {
@@ -536,7 +558,7 @@ impl Game for GameStage {
                     );
                     renderer.text_s(
                         &Point {
-                            x: MESSAGE_X ,
+                            x: MESSAGE_X,
                             y: MESSAGE_OPENING_Y + MESSAGE_DISTANCE * 5.0,
                         },
                         "[ ↑ ] SpeedUP",
@@ -625,8 +647,7 @@ impl Game for GameStage {
                     &_message,
                 );
             }
-            _=> {
-            }
+            _ => {}
         }
         if let Some(machine) = &self.machine {
             machine.draw(renderer);

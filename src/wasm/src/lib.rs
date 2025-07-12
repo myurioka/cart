@@ -8,13 +8,12 @@ use engine::GameLoop;
 use game::GameStage;
 use wasm_bindgen::prelude::*;
 
-//
-#[wasm_bindgen()]
-pub fn main() -> Result<(), JsValue>{
+#[wasm_bindgen]
+pub fn main() -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
 
     browser::spawn_local(async move {
-        let game = GameStage::new(); 
+        let game = GameStage::new();
 
         GameLoop::start(game)
             .await
