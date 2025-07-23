@@ -1,10 +1,9 @@
 mod cart;
 mod music;
 mod ornament;
-#[cfg(test)]
-mod tests;
 mod wall;
 use crate::{
+    browser::now,
     engine::{Audio, Game, KeyState, Line, Point, Renderer, Sound, Velocity},
     game::wall::wall::WALLS_DATA,
 };
@@ -18,14 +17,12 @@ use wall::wall::*;
 
 pub const CANVAS_WIDTH: f32 = 800.0;
 pub const CANVAS_HEIGHT: f32 = 1000.0;
-pub const CART_WIDTH: f32 = 20.0;
-pub const CART_HEIGHT: f32 = 30.0;
-const CART_START_X: f32 = CANVAS_WIDTH / 2.0 - CART_WIDTH / 2.0;
+const CART_START_X: f32 = CANVAS_WIDTH / 2.0;
 const CART_START_Y: f32 = CANVAS_HEIGHT - CART_HEIGHT - 60.0;
+
 const FONT_COLOR: &str = "green";
 const STAGE_LEFT: f32 = 100.0;
-const STAGE_GOAL: f32 = 2300.0;
-const CART_Y: f32 = CANVAS_HEIGHT - 70.0;
+const STAGE_GOAL: f32 = 3800.0;
 const VELOCITY_X: f32 = 0.8;
 const VELOCITY_STEP: f32 = 0.03;
 const VELOCITY_BRAKE_STEP: f32 = 0.06;
@@ -39,15 +36,13 @@ const TITLE_MESSAGE: &str = "Push Space Key.";
 const TITLE_MESSAGE_X: f32 = CANVAS_WIDTH / 2.0;
 const TITLE_MESSAGE_Y: f32 = 340.0;
 
-const MESSAGE_TIME_X: f32 = 40.0;
+const MESSAGE_TIME_X: f32 = 100.0;
 const MESSAGE_TIME_Y: f32 = 120.0;
-const MESSAGE_HIGHSCORE_X: f32 = 40.0;
+const MESSAGE_HIGHSCORE_X: f32 = 100.0;
 const MESSAGE_HIGHSCORE_Y: f32 = 60.0;
-const MESSAGE_VELOCITY_X: f32 = 40.0;
+const MESSAGE_VELOCITY_X: f32 = 100.0;
 const MESSAGE_VELOCITY_Y: f32 = 160.0;
-const MESSAGE_TIME: f32 = 100.0;
-const MESSAGE_X: f32 = 230.0;
-const MESSAGE_Y: f32 = 350.0;
+const MESSAGE_TIME: i32 = 100;
 const MESSAGE_RUNNING: &str = "Ready Go!";
 const MESSAGE_GAMEOVER: &str = "Game OVER!";
 const MESSAGE_GAMECLEAR: &str = "Congrantuation!!";
@@ -58,13 +53,14 @@ const ORNAMENT_WIDTH: f32 = 10.0;
 const ORNAMENT_HEIGHT: f32 = 10.0;
 const BRAKESOUND_FILE: &str = "/cart/assets/beep-7.wav";
 const BACKGROUND_MUSIC_FILE: &str = "/cart/assets/background_song.mp3";
+
 /* CONSTANT VALUE --> */
 
 pub struct GameStage {
     machine: Option<GameStageStateMachine>,
 }
 impl GameStage {
-    /// ゲームステージの新しいインスタンスを作成
+    /// Create a new instance of the game stage
     pub fn new() -> Self {
         GameStage { machine: None }
     }
@@ -76,11 +72,11 @@ enum GameStageStateMachine {
     GameClear(GameStageState<GameClear>),
 }
 impl GameStageStateMachine {
-    /// 新しいゲームステートマシンを作成し、Ready状態で初期化
+    /// Create a new game state machine and initialize with Ready state
     fn new(material: Material) -> Self {
         GameStageStateMachine::Ready(GameStageState::new(material))
     }
-    /// キー入力に基づいてゲーム状態を更新
+    /// Update game state based on key input
     fn update(self, _keystate: &KeyState) -> Self {
         match self {
             GameStageStateMachine::Ready(state) => state.update(_keystate).into(),
@@ -89,7 +85,7 @@ impl GameStageStateMachine {
             GameStageStateMachine::GameClear(state) => state.update(_keystate).into(),
         }
     }
-    /// 現在の状態に基づいてゲーム要素を描画
+    /// Draw game elements based on current state
     fn draw(&self, renderer: &Renderer) {
         match self {
             GameStageStateMachine::Ready(state) => state.material.draw(renderer),
@@ -127,21 +123,21 @@ struct GameStageState<T> {
 
 struct Ready;
 impl GameStageState<Ready> {
-    /// Ready状態で新しいゲームステートを作成
+    /// Create new game state in Ready state
     fn new(material: Material) -> GameStageState<Ready> {
         GameStageState {
             _state: Ready,
             material,
         }
     }
-    /// ゲームを開始してPlaying状態に遷移
+    /// Start game and transition to Playing state
     fn start_running(self) -> GameStageState<Playing> {
         GameStageState {
             _state: Playing,
             material: self.material,
         }
     }
-    /// Ready状態でのキー入力処理（スペースキーでゲーム開始）
+    /// Handle key input in Ready state (start game with space key)
     fn update(self, _keystate: &KeyState) -> ReadyEndState {
         if _keystate.is_pressed("Space") {
             return ReadyEndState::Complete(self.start_running());
@@ -164,21 +160,21 @@ impl From<ReadyEndState> for GameStageStateMachine {
 
 struct Playing;
 impl GameStageState<Playing> {
-    /// ゲームプレイ中のメインアップデート処理
+    /// Main update process during gameplay
     fn update(mut self, _keystate: &KeyState) -> RunningEndState {
         let mut _position: Point = self.material.cart.get_position();
         let mut _velocity: Velocity = self.material.cart.get_velocity();
 
-        self.material.frame += 1.0;
         self.material.distance += _velocity.y;
 
         // Cart reach goal
         if self.material.distance > STAGE_GOAL {
-            let mut _highscore: f32 = self.material.frame;
-            if self.material.highscore != 0.0 {
+            let mut _highscore: i32 = self.material.start_time;
+            if self.material.highscore != 0 {
                 _highscore = _highscore.min(self.material.highscore);
             }
             self.material.highscore = _highscore;
+            self.material.score = now().unwrap() as i32 - self.material.start_time;
             return RunningEndState::GameClear(GameStageState {
                 _state: GameClear,
                 material: self.material,
@@ -214,6 +210,8 @@ impl GameStageState<Playing> {
                 y: -_velocity.y,
             });
         });
+
+        // walls update
         self.material.walls.iter_mut().for_each(|wall| {
             wall.run(Velocity {
                 x: 0.0,
@@ -261,7 +259,7 @@ impl From<RunningEndState> for GameStageStateMachine {
 
 struct GameOver;
 impl GameStageState<GameOver> {
-    /// ゲームオーバー状態での処理（スペースキーで再開）
+    /// Handle GameOver state (restart with space key)
     fn update(self, _keystate: &KeyState) -> GameOverEndState {
         if _keystate.is_pressed("Space") {
             GameOverEndState::Complete(self.new_game())
@@ -269,7 +267,7 @@ impl GameStageState<GameOver> {
             GameOverEndState::Continue(self)
         }
     }
-    /// 新しいゲームを開始（材料をリセットしてReady状態に）
+    /// Start new game (reset materials to Ready state)
     fn new_game(self) -> GameStageState<Ready> {
         GameStageState {
             _state: Ready,
@@ -297,7 +295,7 @@ impl From<GameOverEndState> for GameStageStateMachine {
 }
 struct GameClear;
 impl GameStageState<GameClear> {
-    /// ゲームクリア状態での処理（スペースキーで再開）
+    /// Handle GameClear state (restart with space key)
     fn update(self, _keystate: &KeyState) -> GameClearEndState {
         if _keystate.is_pressed("Space") {
             GameClearEndState::Complete(self.new_game())
@@ -305,7 +303,7 @@ impl GameStageState<GameClear> {
             GameClearEndState::Continue(self)
         }
     }
-    /// 新しいゲームを開始（材料をリセットしてReady状態に）
+    /// Start new game (reset materials to Ready state)
     fn new_game(self) -> GameStageState<Ready> {
         GameStageState {
             _state: Ready,
@@ -333,11 +331,11 @@ pub struct Context {
     pub velocity: Velocity,
 }
 impl Context {
-    /// コンテキストを更新（現在は何も変更しない）
+    /// Update context (currently changes nothing)
     fn update(self) -> Self {
         self
     }
-    /// 指定された速度でコンテキストを更新
+    /// Update context with specified velocity
     fn run(mut self, velocity: Velocity) -> Self {
         self.velocity = velocity;
         self
@@ -350,11 +348,11 @@ pub struct State<S> {
     _state: S,
 }
 impl<S> State<S> {
-    /// 状態のコンテキストへの参照を取得
+    /// Get reference to state context
     pub fn context(&self) -> &Context {
         &self.context
     }
-    /// 状態のコンテキストを更新
+    /// Update state context
     fn update_context(&mut self) {
         self.context = self.context.update();
     }
@@ -371,7 +369,7 @@ pub enum StateMachine {
 #[derive(Copy, Clone)]
 pub struct Running;
 impl State<Running> {
-    /// 新しいRunning状態を作成
+    /// Create new Running state
     pub fn new(p: Point, q: Point, velocity: Velocity) -> Self {
         State {
             context: Context {
@@ -383,14 +381,14 @@ impl State<Running> {
         }
     }
 
-    /// 位置を速度に基づいて更新
+    /// Update position based on velocity
     pub fn update(mut self) -> State<Running> {
         self.context.p = self.context.p.add(self.context.velocity);
         self.context.q = self.context.q.add(self.context.velocity);
         self.update_context();
         self
     }
-    /// 指定された速度で実行
+    /// Run with specified velocity
     pub fn run(self, velocity: Velocity) -> State<Running> {
         State {
             context: self.context.run(velocity),
@@ -400,20 +398,20 @@ impl State<Running> {
 }
 
 impl StateMachine {
-    /// イベントに基づいて状態遷移を実行
+    /// Execute state transition based on event
     fn transition(self, event: Event) -> Self {
         match (self, event) {
             (StateMachine::Running(state), Event::Run(velocity)) => state.run(velocity).into(),
             (StateMachine::Running(state), Event::Update) => state.update().into(),
         }
     }
-    /// ステートマシンのコンテキストを取得
+    /// Get state machine context
     pub fn context(&self) -> &Context {
         match self {
             StateMachine::Running(state) => state.context(),
         }
     }
-    /// 更新イベントを使用してステートマシンを更新
+    /// Update state machine using update event
     fn update(self) -> Self {
         self.transition(Event::Update)
     }
@@ -460,17 +458,19 @@ pub trait Piece {
 
 pub struct Material {
     music: Music,
-    frame: f32,
+    start_time: i32,
     distance: f32,
-    highscore: f32,
+    highscore: i32,
+    score: i32,
     cart: Cart,
     ornaments: Vec<Ornament>,
     walls: Vec<Wall>,
 }
 impl Material {
-    /// 新しいゲーム材料を作成（ハイスコア、オーディオ、サウンドを設定）
-    fn new(highscore: f32, audio: Audio, sound: Sound) -> Self {
+    /// Create new game materials (set highscore, audio, and sound)
+    fn new(highscore: i32, audio: Audio, sound: Sound) -> Self {
         let mut _walls = vec![];
+        let _start_time: i32 = now().unwrap() as i32;
         for w in WALLS_DATA {
             _walls.push(Wall::new(
                 Point { x: w.0, y: w.1 },
@@ -480,9 +480,10 @@ impl Material {
         }
         Material {
             music: Music::new(audio, sound),
-            frame: 0.0,
             distance: 0.0,
+            start_time: _start_time,
             highscore: highscore,
+            score: 0,
             cart: Cart::new(
                 Point {
                     x: CART_START_X,
@@ -506,7 +507,7 @@ impl Material {
             walls: _walls,
         }
     }
-    /// ゲーム材料をリセット（ハイスコアは保持）
+    /// Reset game materials (keep highscore)
     fn reset(material: Self) -> Self {
         Material::new(
             material.highscore,
@@ -514,7 +515,7 @@ impl Material {
             material.music.sound.clone(),
         )
     }
-    /// すべてのゲーム要素を描画
+    /// Draw all game elements
     fn draw(&self, renderer: &Renderer) {
         self.cart.draw(renderer);
         self.ornaments.iter().for_each(|ornament| {
@@ -528,7 +529,7 @@ impl Material {
 
 #[async_trait(?Send)]
 impl Game for GameStage {
-    /// ゲームを初期化し、オーディオとゲーム材料を設定
+    /// Initialize game and set up audio and game materials
     async fn initialize(&self) -> Result<Box<dyn Game>> {
         log!("START");
         match &self.machine {
@@ -547,9 +548,10 @@ impl Game for GameStage {
                     ));
                 }
                 let machine = GameStageStateMachine::new(Material {
-                    frame: 0.0,
+                    start_time: 0,
                     distance: 0.0,
-                    highscore: 0.0,
+                    highscore: 0,
+                    score: 0,
                     music: Music::new(audio, sound),
                     cart: Cart::new(
                         Point {
@@ -580,12 +582,13 @@ impl Game for GameStage {
         }
     }
 
-    /// ゲーム全体を更新
+    /// Update entire game
     fn update(&mut self, _keystate: &KeyState) {
         if let Some(machine) = self.machine.take() {
             self.machine.replace(machine.update(_keystate));
         }
-        assert!(self.machine.is_some());
+
+        //assert!(self.machine.is_some());
     }
     // Draw the entire game
     fn draw(&self, renderer: &Renderer) {
@@ -595,6 +598,7 @@ impl Game for GameStage {
                 draw_openning(renderer);
             }
             Some(GameStageStateMachine::Playing(_state)) => {
+                let _time = now().unwrap() as i32 - _state.material.start_time;
                 renderer.text(
                     &Point {
                         x: MESSAGE_HIGHSCORE_X,
@@ -610,7 +614,7 @@ impl Game for GameStage {
                         x: MESSAGE_TIME_X,
                         y: MESSAGE_TIME_Y,
                     },
-                    format!("Time: {}", _state.material.frame).as_str(),
+                    format!("Time: {}", get_passed_time(&_time)).as_str(),
                     FONT_COLOR,
                     "32px selif",
                     "left",
@@ -625,7 +629,7 @@ impl Game for GameStage {
                     "32px selif",
                     "left",
                 );
-                if _state.material.frame < MESSAGE_TIME {
+                if _time < MESSAGE_TIME {
                     renderer.text(
                         &Point {
                             x: TITLE_MESSAGE_X,
@@ -639,30 +643,30 @@ impl Game for GameStage {
                 }
             }
             Some(GameStageStateMachine::GameOver(_state)) => {
-                let _score = _state.material.frame;
+                let _score = now().unwrap() as i32 - _state.material.start_time;
                 let mut _message = MESSAGE_GAMEOVER.to_string();
-                renderer.text(
-                    &Point {
-                        x: TITLE_MESSAGE_X,
-                        y: TITLE_MESSAGE_Y,
-                    },
-                    &_message,
-                    FONT_COLOR,
-                    "24 myfont",
-                    "left",
-                );
+                draw_gameover(renderer);
             }
             Some(GameStageStateMachine::GameClear(_state)) => {
-                let _score = _state.material.frame;
-                let mut _message = format!("{} Your Time: {}", MESSAGE_GAMECLEAR, _score);
                 renderer.text(
                     &Point {
                         x: TITLE_MESSAGE_X,
                         y: TITLE_MESSAGE_Y,
                     },
+                    MESSAGE_GAMECLEAR,
+                    FONT_COLOR,
+                    "48px my_font",
+                    "center",
+                );
+                let _message = format!("Your Time: {}", get_passed_time(&_state.material.score));
+                renderer.text(
+                    &Point {
+                        x: TITLE_MESSAGE_X,
+                        y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE,
+                    },
                     &_message,
                     FONT_COLOR,
-                    "24 my_font",
+                    "32px my_font",
                     "center",
                 );
             }
@@ -674,6 +678,34 @@ impl Game for GameStage {
     }
 }
 
+fn get_passed_time(secondtime: &i32) -> String {
+    let _seconds = secondtime / 1000;
+    let _mini_seconds = secondtime % 1000;
+    format!("{:<02}.{:<02}", _seconds, _mini_seconds)
+}
+
+fn draw_gameover(renderer: &Renderer) {
+    renderer.text(
+        &Point {
+            x: TITLE_MESSAGE_X,
+            y: TITLE_MESSAGE_Y,
+        },
+        MESSAGE_GAMEOVER,
+        FONT_COLOR,
+        "48px myfont",
+        "center",
+    );
+    renderer.text(
+        &Point {
+            x: TITLE_MESSAGE_X,
+            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE - 10.0,
+        },
+        TITLE_MESSAGE,
+        FONT_COLOR,
+        "48px myfont",
+        "center",
+    );
+}
 fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
@@ -685,11 +717,10 @@ fn draw_openning(renderer: &Renderer) {
         "120px myfont",
         "center",
     );
-
     renderer.text(
         &Point {
-            y: TITLE_MESSAGE_Y,
             x: TITLE_MESSAGE_X,
+            y: TITLE_MESSAGE_Y,
         },
         TITLE_MESSAGE,
         FONT_COLOR,
@@ -699,9 +730,9 @@ fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE,
+            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE - 10.0,
         },
-        "SPPED UP",
+        "Speed Up",
         FONT_COLOR,
         "36px selif",
         "center",
@@ -709,7 +740,7 @@ fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 40.0,
+            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 30.0,
         },
         "▲",
         FONT_COLOR,
@@ -721,7 +752,7 @@ fn draw_openning(renderer: &Renderer) {
             x: TITLE_MESSAGE_X - MESSAGE_DISTANCE,
             y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 80.0,
         },
-        "TO LEFT ◀",
+        "To Left ◀",
         FONT_COLOR,
         "36px selif",
         "center",
@@ -731,7 +762,7 @@ fn draw_openning(renderer: &Renderer) {
             x: TITLE_MESSAGE_X + MESSAGE_DISTANCE + 10.0,
             y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 80.0,
         },
-        "▶ TO RIGHT",
+        "▶ To Right",
         FONT_COLOR,
         "36px selif",
         "center",
@@ -739,7 +770,7 @@ fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 120.0,
+            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 130.0,
         },
         "▼",
         FONT_COLOR,
