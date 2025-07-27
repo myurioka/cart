@@ -205,20 +205,6 @@ fn prepare_input() -> Result<UnboundedReceiver<KeyPress>> {
     Ok(keyevent_receiver)
 }
 
-/* For Mouse Input
-pub fn add_click_handler(elem: HtmlElement) -> UnboundedReceiver<()> {
-    let (mut click_sender, click_receiver) = unbounded();
-
-    let on_click = browser::closure_wrap(Box::new(move || {
-        let _ = click_sender.start_send(());
-    }) as Box<dyn FnMut()>);
-
-    elem.set_onclick(Some(on_click.as_ref().unchecked_ref()));
-    on_click.forget();
-    click_receiver
-}
-*/
-
 #[derive(Clone)]
 pub struct Audio {
     context: AudioContext,
