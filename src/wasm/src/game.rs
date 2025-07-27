@@ -18,11 +18,11 @@ use wall::wall::*;
 pub const CANVAS_WIDTH: f32 = 800.0;
 pub const CANVAS_HEIGHT: f32 = 1000.0;
 const CART_START_X: f32 = CANVAS_WIDTH / 2.0;
-const CART_START_Y: f32 = CANVAS_HEIGHT - CART_HEIGHT - 60.0;
+const CART_START_Y: f32 = 100.0;
 
 const FONT_COLOR: &str = "green";
 const STAGE_LEFT: f32 = 100.0;
-const STAGE_GOAL: f32 = 3800.0;
+const STAGE_GOAL: f32 = 4200.0;
 const VELOCITY_X: f32 = 0.8;
 const VELOCITY_STEP: f32 = 0.03;
 const VELOCITY_BRAKE_STEP: f32 = 0.06;
@@ -31,26 +31,26 @@ const VELOCITY_ZERO: f32 = 0.0;
 /// SCREEN
 const TITLE: &str = "Cart";
 const TITLE_X: f32 = CANVAS_WIDTH / 2.0;
-const TITLE_Y: f32 = 180.0;
+const TITLE_Y: f32 = 820.0;
 const TITLE_MESSAGE: &str = "Push Space Key.";
 const TITLE_MESSAGE_X: f32 = CANVAS_WIDTH / 2.0;
-const TITLE_MESSAGE_Y: f32 = 340.0;
+const TITLE_MESSAGE_Y: f32 = 660.0;
 
 const MESSAGE_TIME_X: f32 = 100.0;
-const MESSAGE_TIME_Y: f32 = 120.0;
-const MESSAGE_HIGHSCORE_X: f32 = 100.0;
-const MESSAGE_HIGHSCORE_Y: f32 = 60.0;
-const MESSAGE_VELOCITY_X: f32 = 100.0;
-const MESSAGE_VELOCITY_Y: f32 = 160.0;
+const MESSAGE_TIME_Y: f32 = 880.0;
+const MESSAGE_HIGHSCORE_X: f32 = 110.0;
+const MESSAGE_HIGHSCORE_Y: f32 = 940.0;
+const MESSAGE_VELOCITY_X: f32 = 110.0;
+const MESSAGE_VELOCITY_Y: f32 = 840.0;
 const MESSAGE_TIME: i32 = 100;
 const MESSAGE_RUNNING: &str = "Ready Go!";
-const MESSAGE_GAMEOVER: &str = "Game OVER!";
+const MESSAGE_GAMEOVER: &str = "Game Over!";
 const MESSAGE_GAMECLEAR: &str = "Congrantuation!!";
 const MESSAGE_DISTANCE: f32 = 120.0;
 const ORNAMENT_X: f32 = STAGE_LEFT + 20.0;
-const ORNAMENT_Y: f32 = 50.0;
+const ORNAMENT_Y: f32 = 950.0;
 const ORNAMENT_WIDTH: f32 = 10.0;
-const ORNAMENT_HEIGHT: f32 = 10.0;
+const ORNAMENT_HEIGHT: f32 = 9900.0;
 const BRAKESOUND_FILE: &str = "/cart/assets/beep-7.wav";
 const BACKGROUND_MUSIC_FILE: &str = "/cart/assets/background_song.mp3";
 
@@ -169,7 +169,7 @@ impl GameStageState<Playing> {
 
         // Cart reach goal
         if self.material.distance > STAGE_GOAL {
-            let mut _highscore: i32 = self.material.start_time;
+            let mut _highscore: i32 = now().unwrap() as i32 - self.material.start_time;
             if self.material.highscore != 0 {
                 _highscore = _highscore.min(self.material.highscore);
             }
@@ -207,7 +207,7 @@ impl GameStageState<Playing> {
         self.material.ornaments.iter_mut().for_each(|ornament| {
             ornament.run(Velocity {
                 x: 0.0,
-                y: -_velocity.y,
+                y: _velocity.y,
             });
         });
 
@@ -215,11 +215,11 @@ impl GameStageState<Playing> {
         self.material.walls.iter_mut().for_each(|wall| {
             wall.run(Velocity {
                 x: 0.0,
-                y: -_velocity.y,
+                y: _velocity.y,
             });
         });
 
-        // check Cart collision
+        // Check Cart collision
         let _knocked = false;
         for i in 0..self.material.walls.len() {
             let _wall = &self.material.walls[i];
@@ -604,7 +604,7 @@ impl Game for GameStage {
                         x: MESSAGE_HIGHSCORE_X,
                         y: MESSAGE_HIGHSCORE_Y,
                     },
-                    format!("BEST TIME: {}", _state.material.highscore).as_str(),
+                    format!("BEST TIME: {}", get_passed_time(&_state.material.highscore)).as_str(),
                     FONT_COLOR,
                     "32px myfont",
                     "left",
@@ -658,11 +658,11 @@ impl Game for GameStage {
                     "48px my_font",
                     "center",
                 );
-                let _message = format!("Your Time: {}", get_passed_time(&_state.material.score));
+                let _message = format!("Your Time: {} s", get_passed_time(&_state.material.score));
                 renderer.text(
                     &Point {
                         x: TITLE_MESSAGE_X,
-                        y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE,
+                        y: TITLE_MESSAGE_Y - MESSAGE_DISTANCE,
                     },
                     &_message,
                     FONT_COLOR,
@@ -698,7 +698,7 @@ fn draw_gameover(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE - 10.0,
+            y: TITLE_MESSAGE_Y - MESSAGE_DISTANCE - 10.0,
         },
         TITLE_MESSAGE,
         FONT_COLOR,
@@ -730,7 +730,7 @@ fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE - 10.0,
+            y: TITLE_MESSAGE_Y - MESSAGE_DISTANCE + 10.0,
         },
         "Speed Up",
         FONT_COLOR,
@@ -740,7 +740,7 @@ fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 30.0,
+            y: TITLE_MESSAGE_Y - MESSAGE_DISTANCE - 30.0,
         },
         "▲",
         FONT_COLOR,
@@ -750,7 +750,7 @@ fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X - MESSAGE_DISTANCE,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 80.0,
+            y: TITLE_MESSAGE_Y - MESSAGE_DISTANCE - 80.0,
         },
         "To Left ◀",
         FONT_COLOR,
@@ -759,8 +759,8 @@ fn draw_openning(renderer: &Renderer) {
     );
     renderer.text(
         &Point {
-            x: TITLE_MESSAGE_X + MESSAGE_DISTANCE + 10.0,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 80.0,
+            x: TITLE_MESSAGE_X + MESSAGE_DISTANCE + 5.0,
+            y: TITLE_MESSAGE_Y - MESSAGE_DISTANCE - 80.0,
         },
         "▶ To Right",
         FONT_COLOR,
@@ -770,7 +770,7 @@ fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 130.0,
+            y: TITLE_MESSAGE_Y - MESSAGE_DISTANCE - 130.0,
         },
         "▼",
         FONT_COLOR,
@@ -780,7 +780,7 @@ fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 170.0,
+            y: TITLE_MESSAGE_Y - MESSAGE_DISTANCE - 170.0,
         },
         "Straighten",
         FONT_COLOR,
@@ -790,7 +790,7 @@ fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 240.0,
+            y: TITLE_MESSAGE_Y - MESSAGE_DISTANCE - 240.0,
         },
         "[   SPACE   ]",
         FONT_COLOR,
@@ -800,7 +800,7 @@ fn draw_openning(renderer: &Renderer) {
     renderer.text(
         &Point {
             x: TITLE_MESSAGE_X,
-            y: TITLE_MESSAGE_Y + MESSAGE_DISTANCE + 300.0,
+            y: TITLE_MESSAGE_Y - MESSAGE_DISTANCE - 300.0,
         },
         "Brake",
         FONT_COLOR,

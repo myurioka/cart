@@ -4,11 +4,11 @@ pub mod ornament {
     use crate::game::{Piece, Renderer, STAGE_GOAL, State, StateMachine};
 
     /* <-- CONSTANT VALUE */
-    const TREE: [&str; 4] = [" ▯ ", "$$$", " $$ ", " $ "];
+    const TREE: [&str; 4] = [" $ ", " $$ ", "$$$", " ▯ "];
     const TREE_DISTANCE: f32 = 12.0;
     const FONT_COLOR: &str = "green";
     const GOAL_X: f32 = 100.0;
-    const GOAL_Y: f32 = -6700.0;
+    const GOAL_Y: f32 = 7450.0;
     const GOAL: [&str; 2] = [
         "□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■",
         "□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■□□■",
@@ -47,18 +47,35 @@ pub mod ornament {
                 );
                 _distance += GOAL_DISTANCE;
             }
-            for i in 0..TREE.len() {
-                renderer.text(
-                    &Point {
-                        x: 270.0 + self.state_machine.context().p.x,
-                        y: 800.0 + self.state_machine.context().p.y - _distance,
-                    },
-                    TREE[i],
-                    FONT_COLOR,
-                    "32 myfont",
-                    "center",
-                );
-                _distance += TREE_DISTANCE;
+
+            let trees = [
+                (30.0, 100.0),
+                (400.0, 500.0),
+                (400.0, 1000.0),
+                (120.0, 1500.0),
+                (620.0, 2000.0),
+                (240.0, 2300.0),
+                (620.0, 3200.0),
+                (400.0, 4200.0),
+                (320.0, 5000.0),
+                (-50.0, 6000.0),
+            ];
+
+            for tree in trees.iter() {
+                _distance = 0.0;
+                for i in 0..TREE.len() {
+                    renderer.text(
+                        &Point {
+                            x: tree.0 + self.state_machine.context().p.x,
+                            y: tree.1 + self.state_machine.context().p.y - _distance,
+                        },
+                        TREE[i],
+                        FONT_COLOR,
+                        "32 myfont",
+                        "center",
+                    );
+                    _distance += TREE_DISTANCE;
+                }
             }
         }
     }

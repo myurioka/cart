@@ -10,7 +10,7 @@ pub mod cart {
     const FONT_COLOR: &str = "green";
 
     /// Normal cart appearance - three lines representing the cart visually
-    const CART: [&str; 3] = ["O❚O", " ◆ ", "o❚o"];
+    const CART: [&str; 3] = ["o❚o", " ◆ ", "O❚O"];
 
     /// Knocked cart appearance - slightly damaged/distorted visual representation
     const CART_KNOCKED: [&str; 3] = ["O❚ O", " ◆ ", "o ❚o"];
@@ -19,10 +19,10 @@ pub mod cart {
     const CART_DISTANCE: f32 = 18.0;
 
     /// Cart width used for collision detection and positioning
-    pub const CART_WIDTH: f32 = 40.0;
+    pub const CART_WIDTH: f32 = 20.0;
 
     /// Cart height used for collision detection and positioning
-    pub const CART_HEIGHT: f32 = 30.0;
+    pub const CART_HEIGHT: f32 = 50.0;
 
     ///
     /// A cart entity in the game system.
@@ -123,15 +123,15 @@ pub mod cart {
         pub fn intersect(&self, _wall_line: Line) -> bool {
             let mut _cart_lines = vec![];
 
-            // left side
+            // upper side
             _cart_lines.push(Line::new(
                 Point::new(
-                    self.state_machine.context().position.x,
+                    self.state_machine.context().position.x - CART_WIDTH,
                     self.state_machine.context().position.y,
                 ),
                 Point::new(
-                    self.state_machine.context().position.x,
-                    self.state_machine.context().position.y + CART_HEIGHT,
+                    self.state_machine.context().position.x + CART_WIDTH,
+                    self.state_machine.context().position.y,
                 ),
             ));
             // right line
@@ -145,14 +145,14 @@ pub mod cart {
                     self.state_machine.context().position.y + CART_HEIGHT,
                 ),
             ));
-            // upper line
+            // left line
             _cart_lines.push(Line::new(
                 Point::new(
-                    self.state_machine.context().position.x,
-                    self.state_machine.context().position.y,
+                    self.state_machine.context().position.x - CART_WIDTH,
+                    self.state_machine.context().position.y - CART_HEIGHT,
                 ),
                 Point::new(
-                    self.state_machine.context().position.x + CART_WIDTH,
+                    self.state_machine.context().position.x - CART_WIDTH,
                     self.state_machine.context().position.y,
                 ),
             ));
@@ -225,7 +225,7 @@ pub mod cart {
                             CART_KNOCKED[i],
                             FONT_COLOR,
                             "24px sans-serif",
-                            "center",
+                            "left",
                         );
                         _distance += CART_DISTANCE;
                     }

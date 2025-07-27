@@ -1,4 +1,5 @@
 use crate::browser::{self, LoopClosure};
+use crate::game::CANVAS_HEIGHT;
 use crate::sound;
 //use num_traits::FromPrimitive;
 use anyhow::{Result, anyhow};
@@ -67,13 +68,17 @@ impl Renderer {
         self.context.set_text_align(align);
         self.context.set_text_baseline("middle");
         self.context.set_font(font);
-        let _ = self.context.fill_text(text, point.x as f64, point.y as f64);
+        let _ = self
+            .context
+            .fill_text(text, point.x as f64, CANVAS_HEIGHT as f64 - point.y as f64);
     }
     pub fn line(&self, p: &Point, q: &Point) {
         self.context.begin_path();
         self.context.set_stroke_style_str(FONT_COLOR);
-        self.context.move_to(p.x.into(), p.y as f64);
-        self.context.line_to(q.x.into(), q.y as f64);
+        self.context
+            .move_to(p.x.into(), CANVAS_HEIGHT as f64 - p.y as f64);
+        self.context
+            .line_to(q.x.into(), CANVAS_HEIGHT as f64 - q.y as f64);
         self.context.close_path();
         self.context.stroke();
     }
