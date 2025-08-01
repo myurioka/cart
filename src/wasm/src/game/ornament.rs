@@ -1,7 +1,7 @@
 pub mod ornament {
     //! ornament related functions.
     use crate::engine::{Point, Velocity};
-    use crate::game::{Piece, Renderer, STAGE_GOAL, State, StateMachine};
+    use crate::game::{Piece, Renderer, State, StateMachine};
 
     /* <-- CONSTANT VALUE */
     const TREE: [&str; 4] = [" $ ", " $$ ", "$$$", " ▯ "];

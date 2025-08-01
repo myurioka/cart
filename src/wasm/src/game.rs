@@ -490,8 +490,6 @@ impl Material {
                     y: CART_START_Y,
                 },
                 Velocity { x: 0.0, y: 0.0 },
-                CART_WIDTH,
-                CART_HEIGHT,
             ),
             ornaments: vec![Ornament::new(
                 Point {
@@ -559,8 +557,6 @@ impl Game for GameStage {
                             y: CART_START_Y,
                         },
                         Velocity { x: 0.0, y: 0.0 },
-                        CART_WIDTH,
-                        CART_HEIGHT,
                     ),
                     ornaments: vec![Ornament::new(
                         Point {

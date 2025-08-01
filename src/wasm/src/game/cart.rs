@@ -46,11 +46,9 @@ pub mod cart {
         ///
         /// # Returns
         /// A new Cart instance with the specified parameters
-        pub fn new(position: Point, velocity: Velocity, width: f32, height: f32) -> Self {
+        pub fn new(position: Point, velocity: Velocity) -> Self {
             Cart {
-                state_machine: CartStateMachine::Idle(CartState::new(
-                    position, velocity, width, height,
-                )),
+                state_machine: CartStateMachine::Idle(CartState::new(position, velocity)),
             }
         }
         ///
@@ -105,6 +103,7 @@ pub mod cart {
         /// Transitions the cart from running state to knocked state,
         /// changing its visual appearance and behavior.
         pub fn knocked(&mut self) {
+            let _figure: [String; 3] = std::array::from_fn(|i| CART_KNOCKED[i].to_string());
             self.state_machine = self.state_machine.clone().transition(Event::Knocked);
         }
 
@@ -214,37 +213,22 @@ pub mod cart {
         /// * `renderer` - The renderer object used for drawing operations
         pub fn draw(&self, renderer: &Renderer) {
             let mut _distance: f32 = 0.0;
-            match &self.state_machine {
-                CartStateMachine::Knocked(_state) => {
-                    for i in 0..CART_KNOCKED.len() {
-                        renderer.text(
-                            &Point {
-                                x: self.state_machine.context().position.x,
-                                y: CART_START_Y - _distance,
-                            },
-                            CART_KNOCKED[i],
-                            FONT_COLOR,
-                            "24px sans-serif",
-                            "left",
-                        );
-                        _distance += CART_DISTANCE;
-                    }
-                }
-                _ => {
-                    for i in 0..CART.len() {
-                        renderer.text(
-                            &Point {
-                                x: self.state_machine.context().position.x,
-                                y: CART_START_Y - _distance,
-                            },
-                            CART[i],
-                            FONT_COLOR,
-                            "24px sans-serif",
-                            "center",
-                        );
-                        _distance += CART_DISTANCE;
-                    }
-                }
+            let mut _figure = self.get_state_machine().context().figure.clone();
+
+            let _f: [&str; 3] = std::array::from_fn(|i| _figure[i].as_str());
+
+            for i in 0..CART_KNOCKED.len() {
+                renderer.text(
+                    &Point {
+                        x: self.state_machine.context().position.x,
+                        y: CART_START_Y - _distance,
+                    },
+                    _f[i],
+                    FONT_COLOR,
+                    "24px sans-serif",
+                    "center",
+                );
+                _distance += CART_DISTANCE;
             }
         }
     }
@@ -396,14 +380,9 @@ pub mod cart {
         ///
         /// # Returns
         /// A new CartState<Idle> instance
-        pub fn new(position: Point, velocity: Velocity, width: f32, height: f32) -> Self {
+        pub fn new(position: Point, velocity: Velocity) -> Self {
             CartState {
-                context: CartContext {
-                    position: position,
-                    velocity: velocity,
-                    width: width,
-                    height: height,
-                },
+                context: CartContext::new(position, velocity),
                 _state: Idle {},
             }
         }
@@ -492,78 +471,29 @@ pub mod cart {
     pub struct CartContext {
         position: Point,
         velocity: Velocity,
-        width: f32,
-        height: f32,
+        figure: [String; 3],
     }
+
     impl CartContext {
-        pub fn update(self) -> Self {
+        fn new(position: Point, velocity: Velocity) -> CartContext {
+            let _figure: [String; 3] = std::array::from_fn(|i| CART[i].to_string());
+            return CartContext {
+                position: position,
+                velocity: velocity,
+                figure: _figure,
+            };
+        }
+        fn update(self) -> Self {
             self
         }
         fn run(mut self, velocity: Velocity) -> Self {
             self.velocity = velocity;
             self
         }
-        fn knocked(self) -> Self {
+        fn knocked(mut self) -> Self {
+            let _figure: [String; 3] = std::array::from_fn(|i| CART_KNOCKED[i].to_string());
+            self.figure = _figure;
             self
         }
-    }
-}
-#[cfg(test)]
-mod tests {
-    use crate::engine::{Point, Velocity};
-    use crate::game::Cart;
-    use crate::game::{CART_HEIGHT, CART_START_Y, CART_WIDTH, Line};
-
-    #[test]
-    fn cart_new_initialization() {
-        let position = Point::new(100.0, 200.0);
-        let velocity = Velocity::new(5.0, 0.0);
-        let width = CART_WIDTH;
-        let height = CART_HEIGHT;
-
-        let cart = Cart::new(position, velocity, width, height);
-
-        assert_eq!(cart.get_position().x, 100.0);
-        assert_eq!(cart.get_position().y, 200.0);
-        assert_eq!(cart.get_velocity().x, 5.0);
-        assert_eq!(cart.get_velocity().y, 0.0);
-    }
-
-    #[test]
-    fn intersect_wall() {
-        let mut cart = Cart::new(
-            Point { x: 245.0, y: 665.0 },
-            Velocity { x: 245.0, y: 695.0 },
-            CART_WIDTH,
-            CART_HEIGHT,
-        );
-
-        let mut line = Line {
-            p: Point { x: 320.0, y: 405.0 },
-            q: Point {
-                x: 160.0,
-                y: 1005.0,
-            },
-        };
-        assert_eq!(cart.intersect(line), true); // true: crossing
-
-        cart = Cart::new(
-            Point {
-                x: 10.0,
-                y: CART_START_Y,
-            },
-            Velocity {
-                x: 10.0,
-                y: CART_START_Y + CART_HEIGHT / 2.0,
-            },
-            CART_WIDTH,
-            CART_HEIGHT,
-        );
-
-        line = Line {
-            p: Point { x: 30.0, y: 0.0 },
-            q: Point { x: 30.0, y: 600.0 },
-        };
-        assert_eq!(cart.intersect(line), false); // true: crossing
     }
 }

@@ -22,6 +22,8 @@ serde = {version = "1.0.201", features = ["derive"] }
 anyhow = "1.0.83"
 async-trait = "0.1.80"
 js-sys = "0.3.70"
+strum = "0.24"
+strum_macros = "0.24"
 
 [dependencies.web-sys]
 version = "0.3.69"
