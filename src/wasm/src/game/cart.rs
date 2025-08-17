@@ -425,7 +425,7 @@ pub mod cart {
         /// # Returns
         /// Updated CartState<Running> with new position
         pub fn update(mut self) -> CartState<Running> {
-            self.context.position.x = self.context.position.x + self.context.velocity.x;
+            self.context.position.x += self.context.velocity.x;
             self.update_context();
             self
         }

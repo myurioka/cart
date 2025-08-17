@@ -40,8 +40,14 @@ const MESSAGE_TIME_X: f32 = 100.0;
 const MESSAGE_TIME_Y: f32 = 880.0;
 const MESSAGE_HIGHSCORE_X: f32 = 110.0;
 const MESSAGE_HIGHSCORE_Y: f32 = 940.0;
-const MESSAGE_VELOCITY_X: f32 = 110.0;
-const MESSAGE_VELOCITY_Y: f32 = 840.0;
+const MESSAGE_TIME_X: f32 = 30.0;
+const MESSAGE_TIME_Y: f32 = 900.0;
+const MESSAGE_VELOCITY_X: f32 = 30.0;
+const MESSAGE_VELOCITY_Y: f32 = 860.0;
+const MESSAGE_POSITION_X_X: f32 = 30.0;
+const MESSAGE_POSITION_X_Y: f32 = 820.0;
+const MESSAGE_POSITION_Y_X: f32 = 30.0;
+const MESSAGE_POSITION_Y_Y: f32 = 780.0;
 const MESSAGE_TIME: i32 = 100;
 const MESSAGE_RUNNING: &str = "Ready Go!";
 const MESSAGE_GAMEOVER: &str = "Game Over!";
@@ -162,13 +168,34 @@ struct Playing;
 impl GameStageState<Playing> {
     /// Main update process during gameplay
     fn update(mut self, _keystate: &KeyState) -> RunningEndState {
-        let mut _position: Point = self.material.cart.get_position();
+        // Check if cart completed one lap
+        let _position: Point = self.material.cart.get_position();
         let mut _velocity: Velocity = self.material.cart.get_velocity();
-
         self.material.distance += _velocity.y;
 
-        // Cart reach goal
         if self.material.distance > STAGE_GOAL {
+            // Reset walls to original positions
+            self.material.walls.clear();
+            for w in WALLS_DATA {
+                self.material.walls.push(Wall::new(
+                    Point { x: w.0, y: w.1 },
+                    Point { x: w.2, y: w.3 },
+                    Velocity { x: 0.0, y: 0.0 },
+                ));
+            }
+
+            // Reset ornaments to original positions
+            self.material.ornaments = vec![Ornament::new(
+                Point {
+                    x: ORNAMENT_X,
+                    y: ORNAMENT_Y,
+                },
+                Point {
+                    x: ORNAMENT_X + ORNAMENT_WIDTH,
+                    y: ORNAMENT_Y + ORNAMENT_HEIGHT,
+                },
+                Velocity { x: 0.0, y: 0.0 },
+            )];
             let mut _highscore: i32 = now().unwrap() as i32 - self.material.start_time;
             if self.material.highscore != 0 {
                 _highscore = _highscore.min(self.material.highscore);
@@ -219,7 +246,7 @@ impl GameStageState<Playing> {
             });
         });
 
-        // Check Cart collision
+        // Check Cart for Walls
         let _knocked = false;
         for i in 0..self.material.walls.len() {
             let _wall = &self.material.walls[i];
@@ -467,8 +494,7 @@ pub struct Material {
     walls: Vec<Wall>,
 }
 impl Material {
-    /// Create new game materials (set highscore, audio, and sound)
-    fn new(highscore: i32, audio: Audio, sound: Sound) -> Self {
+    fn new(_highscore: i32, audio: Audio, sound: Sound) -> Self {
         let mut _walls = vec![];
         let _start_time: i32 = now().unwrap() as i32;
         for w in WALLS_DATA {
@@ -482,7 +508,7 @@ impl Material {
             music: Music::new(audio, sound),
             distance: 0.0,
             start_time: _start_time,
-            highscore: highscore,
+            highscore: _highscore,
             score: 0,
             cart: Cart::new(
                 Point {
@@ -612,7 +638,7 @@ impl Game for GameStage {
                     },
                     format!("Time: {}", get_passed_time(&_time)).as_str(),
                     FONT_COLOR,
-                    "32px selif",
+                    "28px selif",
                     "left",
                 );
                 renderer.text(
@@ -622,7 +648,7 @@ impl Game for GameStage {
                     },
                     format!("Velocity: {:.1}", _state.material.cart.get_velocity().y).as_str(),
                     FONT_COLOR,
-                    "32px selif",
+                    "28px selif",
                     "left",
                 );
                 if _time < MESSAGE_TIME {
@@ -651,7 +677,7 @@ impl Game for GameStage {
                     },
                     MESSAGE_GAMECLEAR,
                     FONT_COLOR,
-                    "48px my_font",
+                    "48px myfont",
                     "center",
                 );
                 let _message = format!("Your Time: {} s", get_passed_time(&_state.material.score));

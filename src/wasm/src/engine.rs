@@ -21,14 +21,14 @@ pub struct Point {
     pub y: f32,
 }
 impl Point {
-    pub fn new(x: f32, y: f32) -> Point {
-        Point { x: x, y: y }
+    pub fn new(_x: f32, _y: f32) -> Point {
+        Point { x: _x, y: _y }
     }
-    pub fn add(&self, v: Velocity) -> Point {
-        return Point {
-            x: &self.x - v.x,
-            y: &self.y - v.y,
-        };
+    pub fn add(&self, _v: Velocity) -> Point {
+        Point {
+            x: self.x - _v.x,
+            y: self.y - _v.y,
+        }
     }
 }
 
@@ -49,8 +49,8 @@ pub struct Line {
     pub q: Point,
 }
 impl Line {
-    pub fn new(p: Point, q: Point) -> Line {
-        Line { p: p, q: q }
+    pub fn new(_p: Point, _q: Point) -> Line {
+        Line { p: _p, q: _q }
     }
 }
 
@@ -103,7 +103,7 @@ impl GameLoop {
         let mut keyevent_receiver = prepare_input()?;
         let mut game = game.initialize().await?;
         let mut game_loop = GameLoop {
-            last_frame: browser::now()?.into(),
+            last_frame: browser::now()?,
             accumulated_delta: 0.0,
         };
 
@@ -145,9 +145,9 @@ pub struct KeyState {
 
 impl KeyState {
     fn new() -> Self {
-        return KeyState {
+        KeyState {
             pressed_keys: HashMap::new(),
-        };
+        }
     }
     pub fn is_pressed(&self, code: &str) -> bool {
         self.pressed_keys.contains_key(code)
@@ -158,7 +158,7 @@ impl KeyState {
     }
 
     fn set_released(&mut self, code: &str) {
-        self.pressed_keys.remove(code.into());
+        self.pressed_keys.remove(code);
     }
 }
 
@@ -233,10 +233,10 @@ impl Audio {
     }
 
     pub fn play_sound(&self, sound: &Sound) -> Result<()> {
-        sound::play_sound(&self.context, &sound.buffer, sound::LOOPING::No)
+        sound::play_sound(&self.context, &sound.buffer, sound::Looping::No)
     }
 
     pub fn play_looping_sound(&self, sound: &Sound) -> Result<()> {
-        sound::play_sound(&self.context, &sound.buffer, sound::LOOPING::Yes)
+        sound::play_sound(&self.context, &sound.buffer, sound::Looping::Yes)
     }
 }
